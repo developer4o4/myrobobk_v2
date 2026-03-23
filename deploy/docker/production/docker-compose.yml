@@ -1,0 +1,138 @@
+services:
+
+  # ─── PostgreSQL ──────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  # ─── Redis (cache + throttle) ────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - backend
+
+  # ─── Docker-in-Docker (judge sandbox uchun) ─────────────────────────
+  dind:
+    image: docker:27-dind
+    restart: unless-stopped
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command: ["--host=tcp://0.0.0.0:2375", "--storage-driver=overlay2"]
+    volumes:
+      - dind_data:/var/lib/docker
+      - judge_runs:/judge_runs
+    networks:
+      - backend
+
+  # ─── Judge sandbox image builder ─────────────────────────────────────
+  judge_image:
+    build:
+      context: ../../../backend/apps/courses/judgenew
+      dockerfile: Dockerfile
+    image: judge-sandbox:latest
+    profiles: ["build"]   # faqat: docker compose --profile build up judge_image
+
+  # ─── Django / Gunicorn ───────────────────────────────────────────────
+  web:
+    build:
+      context: ../../../backend
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    env_file:
+      - ../../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+      - judge_runs:/judge_runs
+      - ../../../logs/web:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      dind:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:7712/admin/login/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - backend
+      - frontend
+
+  # ─── Nginx ───────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_data:/app/staticfiles:ro
+      - media_data:/app/media:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - ../../../logs/nginx:/var/log/nginx
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - frontend
+
+  # ─── Telegram Bot ────────────────────────────────────────────────────
+  bot:
+    build:
+      context: ../../../bot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../../.env
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - backend
+
+volumes:
+  db_data:
+  redis_data:
+  dind_data:
+  media_data:
+  static_data:
+  judge_runs:
+  
+
+networks:
+  backend:
+    internal: true
+  frontend:

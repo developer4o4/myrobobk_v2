@@ -1,0 +1,73 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD: myapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+  dind:
+    image: docker:27-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command: ["--host=tcp://0.0.0.0:2375", "--storage-driver=overlay2"]
+    ports:
+      - "127.0.0.1:2375:2375"
+    volumes:
+      - dind_data:/var/lib/docker
+      - judge_runs:/judge_runs
+    restart: unless-stopped
+
+  judge_image:
+    build:
+      context: ../../../backend/apps/courses/judgenew
+      dockerfile: Dockerfile
+    image: judge-sandbox:latest
+
+  web:
+    build:
+      context: ../../../backend
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:7712
+    env_file:
+      - ../../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ../../../backend:/app
+      - media_data:/app/media
+      - judge_runs:/judge_runs
+    ports:
+      - "7712:7712"
+    depends_on:
+      - db
+      - redis
+      - dind
+
+  bot:
+    build:
+      context: ../../../bot
+      dockerfile: Dockerfile
+    env_file:
+      - ../../../.env
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  dind_data:
+  media_data:
+  judge_runs:
