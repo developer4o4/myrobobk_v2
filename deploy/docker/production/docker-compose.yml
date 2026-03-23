@@ -65,6 +65,9 @@ services:
     env_file:
       - ../../../.env
     environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings.production
       REDIS_URL: redis://redis:6379/0
     volumes:
