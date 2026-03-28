@@ -7,6 +7,8 @@ from apps.courses.views import (
     MyPurchasedCoursesView,
     SectionTopicsView,
     TopicDetailView,
+    CourseTypeListView,
+    CoursesByCourseTypeView
 )
 from apps.courses.views_submission import TopicSubmitView
 
@@ -18,4 +20,6 @@ urlpatterns = [
     path("topics/<uuid:pk>/", TopicDetailView.as_view(), name="topic-detail"),
     path("topics/<uuid:topic_id>/submit/", TopicSubmitView.as_view(), name="topic-submit"),
     path("my-courses/", MyPurchasedCoursesView.as_view(), name="my-courses"),
+    path('course-types/', CourseTypeListView.as_view()),
+    path('course-types/<uuid:course_type_id>/courses/', CoursesByCourseTypeView.as_view()),
 ]

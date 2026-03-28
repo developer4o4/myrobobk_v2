@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.courses.models import Course, CourseSubscription, Section, Topic
+from apps.courses.models import Course, CourseSubscription, Section, Topic, CourseType
 from apps.courses.permissions import HasActiveCourseSubscription
 from apps.courses.serializers import (
     BuyCourseSerializer,
@@ -14,8 +14,23 @@ from apps.courses.serializers import (
     SectionSerializer,
     TopicMiniSerializer,
     TopicSerializer,
+    CourseTypeSerializer
 )
 
+
+class CourseTypeListView(ListAPIView):
+    queryset = CourseType.objects.filter(is_active=True)
+    serializer_class = CourseTypeSerializer
+
+class CoursesByCourseTypeView(ListAPIView):
+    serializer_class = CourseSerializer
+
+    def get_queryset(self):
+        course_type_id = self.kwargs['course_type_id']
+        return Course.objects.filter(
+            course_type_id=course_type_id,
+            is_active=True
+        ).order_by('-created_at')
 
 class CourseListView(ListAPIView):
     serializer_class = CourseSerializer

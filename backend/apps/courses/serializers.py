@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.courses.models import Course, Problem, Section, Topic
+from apps.courses.models import Course, Problem, Section, Topic, CourseType
 
 
 class ProblemSerializer(serializers.ModelSerializer):
@@ -8,6 +8,10 @@ class ProblemSerializer(serializers.ModelSerializer):
         model = Problem
         fields = ("title", "statement", "sample_input", "sample_output")
 
+class CourseTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseType
+        fields = ['id', 'title']
 
 class CourseSerializer(serializers.ModelSerializer):
     buyers_total = serializers.IntegerField(read_only=True)

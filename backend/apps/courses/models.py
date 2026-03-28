@@ -22,8 +22,12 @@ def add_one_month(dt):
     day = min(dt.day, monthrange(year, month)[1])
     return dt.replace(year=year, month=month, day=day)
 
+class CourseType(BaseModel):
+    title = models.CharField(max_length=256)
+    
 
 class Course(BaseModel):
+    course_type = models.ForeignKey(CourseType,on_delete=models.SET_NULL, null=True,blank=True),
     title = models.CharField(max_length=255)
     about = models.TextField(blank=True)
     image = models.ImageField(upload_to="courses/images/", blank=True, null=True)
