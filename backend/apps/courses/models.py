@@ -1,6 +1,7 @@
 import logging
 from calendar import monthrange
 from decimal import Decimal
+from django.utils.text import slugify
 
 from django.conf import settings
 from django.db import models, transaction
@@ -24,17 +25,28 @@ def add_one_month(dt):
 
 class CourseType(BaseModel):
     title = models.CharField(max_length=256)
+    slug = models.CharField(max_length=255, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
     
 
 class Course(BaseModel):
-    course_type = models.ForeignKey(CourseType,on_delete=models.SET_NULL, null=True,blank=True),
+    course_type = models.ForeignKey(CourseType,on_delete=models.SET_NULL, null=True,blank=True)
     title = models.CharField(max_length=255)
     about = models.TextField(blank=True)
     image = models.ImageField(upload_to="courses/images/", blank=True, null=True)
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.CharField(max_length=255, unique=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
     class Meta:
         indexes = [models.Index(fields=["is_active", "-created_at"])]
 
@@ -46,7 +58,12 @@ class Section(BaseModel):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="sections")
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField(default=1)
+    slug = models.CharField(max_length=255, unique=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
     class Meta:
         unique_together = ("course", "order")
         ordering = ["order", "id"]
@@ -66,7 +83,12 @@ class Topic(BaseModel):
     video_url = models.CharField(max_length=500, blank=True, null=True)
     topic_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="content")
     order = models.PositiveIntegerField(default=1)
+    slug = models.CharField(max_length=255, unique=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
     class Meta:
         unique_together = ("section", "order")
         ordering = ["order", "id"]
