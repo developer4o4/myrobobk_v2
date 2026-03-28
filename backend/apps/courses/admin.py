@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Course, Section, Topic,
     Problem, TestCase, Submission,
-    CourseSubscription
+    CourseSubscription, CourseType
 )
 
 
@@ -81,3 +81,5 @@ class CourseSubscriptionAdmin(admin.ModelAdmin):
     list_filter = ("active", "course")
     search_fields = ("user__id", "course__title")
     readonly_fields = ("started_at", "last_billed_at")
+
+admin.site.register(CourseType)

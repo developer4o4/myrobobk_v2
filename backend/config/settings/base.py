@@ -168,16 +168,16 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "/app/logs/django.log",
-            "maxBytes": 10 * 1024 * 1024,  # 10MB
-            "backupCount": 5,
-            "formatter": "verbose",
-        },
+        # "file": {
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": "/app/logs/django.log",
+        #     "maxBytes": 10 * 1024 * 1024,  # 10MB
+        #     "backupCount": 5,
+        #     "formatter": "verbose",
+        # },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"],
         "level": "WARNING",
     },
     "loggers": {
