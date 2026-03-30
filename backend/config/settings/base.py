@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.blog",
     "apps.teachers",
     "apps.common",
+    "django_celery_beat"
 ]
 
 # ──────────────────────────── MIDDLEWARE ────────────────────────────
@@ -193,6 +194,27 @@ LOGGING = {
         },
     },
 }
+
+# Celery
+CELERY_BROKER_URL    = env("REDIS_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND= env("REDIS_URL", default="redis://redis:6379/0")
+CELERY_TIMEZONE      = "Asia/Tashkent"
+
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    "auto-renew-subscriptions": {
+        "task": "courses.auto_renew_subscriptions",
+        "schedule": crontab(hour=0, minute=0),
+    },
+}
+
+# Payme
+PAYME_MERCHANT_ID  = os.getenv("PAYME_MERCHANT_ID")
+PAYME_SECRET_KEY   = os.getenv("PAYME_SECRET_KEY")
+PAYME_URL          = os.getenv("PAYME_URL", default="https://checkout.paycom.uz/api")
+PAYME_IKPU_CODE    = os.getenv("PAYME_IKPU_CODE",    default="00702001001000001")
+PAYME_PACKAGE_CODE = os.getenv("PAYME_PACKAGE_CODE", default="1496156")
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
