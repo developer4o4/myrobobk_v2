@@ -38,12 +38,16 @@ services:
     image: docker:27-dind
     restart: unless-stopped
     privileged: true
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
     environment:
       DOCKER_TLS_CERTDIR: ""
     command: ["--host=tcp://0.0.0.0:2375", "--storage-driver=overlay2"]
     volumes:
       - dind_data:/var/lib/docker
       - judge_runs:/judge_runs
+      - /tmp/judge_runs:/judge_runs
     networks:
       - backend
 
@@ -70,11 +74,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings.production
       REDIS_URL: redis://redis:6379/0
+      DOCKER_HOST: unix:///var/run/docker.sock
     volumes:
       - media_data:/app/media
       - static_data:/app/staticfiles
       - judge_runs:/judge_runs
+      - /var/run/docker.sock:/var/run/docker.sock
       - ../../../logs/web:/app/logs
+      - /root/myrobo/myrobobk_v2/backend/media:/app/media
+      - /tmp/judge_runs:/judge_runs
     depends_on:
       db:
         condition: service_healthy
@@ -135,8 +143,7 @@ volumes:
   dind_data:
   media_data:
   static_data:
-  judge_runs:
-  
+
 
 networks:
   backend:

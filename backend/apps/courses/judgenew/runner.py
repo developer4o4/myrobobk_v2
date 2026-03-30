@@ -83,34 +83,26 @@ def _safe_cleanup(td: Path) -> None:
 
 
 def _build_base_cmd(td: Path) -> list[str]:
-    """Docker sandboxni ishga tushirish uchun asosiy buyruq."""
+    # Container ichidagi /judge_runs -> serverda /tmp/judge_runs
+    host_path = str(td).replace("/judge_runs", "/tmp/judge_runs")
+    
     cmd = [
         "docker", "run", "--rm",
-        "--network", "none",
         "--memory", "256m",
         "--memory-swap", "256m",
         "--cpus", "0.5",
         "--pids-limit", "64",
-        "--read-only",
-        "--cap-drop", "ALL",
-        "--security-opt", "no-new-privileges:true",
+        #"--cap-drop", "ALL",
+        #"--security-opt", "no-new-privileges:true",
         "--user", "1000:1000",
-        "--tmpfs", "/tmp:rw,nosuid,nodev,noexec,size=32m",
-        "-v", f"{td.as_posix()}:/work:rw",
+        "--tmpfs", "/tmp:rw,nosuid,nodev,size=32m",
+        "-v", f"{host_path}:/work:rw",  # ← host path ishlatiladi
         "-w", "/work",
     ]
-
-    # Seccomp faqat fayl mavjud bo'lsa qo'shamiz
-    if SECCOMP_PROFILE.exists() and SECCOMP_PROFILE.stat().st_size > 10:
-        cmd += ["--security-opt", f"seccomp={SECCOMP_PROFILE}"]
-    else:
-        logger.warning("seccomp.json topilmadi yoki bo'sh — syscall cheklovi yo'q!")
-
     cmd.append(SANDBOX_IMAGE)
     cmd.append("sh")
     cmd.append("-c")
     return cmd
-
 
 def run_in_sandbox(language: str, source_code: str, input_data: str) -> RunResult:
     if not shutil.which("docker"):
