@@ -44,6 +44,7 @@ services:
     volumes:
       - dind_data:/var/lib/docker
       - judge_runs:/judge_runs
+      - /tmp/judge_runs:/judge_runs
     networks:
       - backend
 
@@ -70,11 +71,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings.production
       REDIS_URL: redis://redis:6379/0
+      DOCKER_HOST: tcp://dind:2375
     volumes:
       - media_data:/app/media
       - static_data:/app/staticfiles
       - judge_runs:/judge_runs
       - ../../../logs/web:/app/logs
+      - /root/myrobo/myrobobk_v2/backend/media:/app/media
+      - /tmp/judge_runs:/judge_runs
     depends_on:
       db:
         condition: service_healthy
@@ -128,15 +132,52 @@ services:
     networks:
       - backend
       - frontend
-
+  celery:
+    build:
+      context: ../../../backend
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    command: celery -A config worker -l info -Q celery
+    env_file:
+      - ../../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+ 
+  celery-beat:
+    build:
+      context: ../../../backend
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - ../../../.env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
 volumes:
   db_data:
   redis_data:
   dind_data:
   media_data:
   static_data:
-  judge_runs:
-  
+
 
 networks:
   backend:
