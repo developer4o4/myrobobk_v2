@@ -299,7 +299,9 @@ class CourseType(BaseModel):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
-
+    
+    def __str__(self):
+        return self.title
 
 class Course(BaseModel):
     course_type = models.ForeignKey(
