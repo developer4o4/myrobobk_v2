@@ -196,8 +196,8 @@ LOGGING = {
 }
 
 # Celery
-CELERY_BROKER_URL    = env("REDIS_URL", default="redis://redis:6379/0")
-CELERY_RESULT_BACKEND= env("REDIS_URL", default="redis://redis:6379/0")
+CELERY_BROKER_URL    = os.getenv("REDIS_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND= os.getenv("REDIS_URL", default="redis://redis:6379/0")
 CELERY_TIMEZONE      = "Asia/Tashkent"
 
 from celery.schedules import crontab
