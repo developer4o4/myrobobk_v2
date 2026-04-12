@@ -116,7 +116,7 @@ REST_FRAMEWORK = {
         "user": "300/minute",
     },
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
+    # "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
 }
 
 SIMPLE_JWT = {
