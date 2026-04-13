@@ -102,7 +102,27 @@ class CourseSectionsView(ListAPIView):
             .order_by("order", "id")
         )
 
+import requests
+from django.conf import settings
 
+class VideoOTPView(APIView):
+    permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
+
+    def get(self, request, topic_id):
+        topic = get_object_or_404(Topic, id=topic_id)
+        
+        if not topic.vdo_video_id:
+            return Response({"detail": "Video mavjud emas"}, status=404)
+
+        resp = requests.post(
+            f"https://dev.vdocipher.com/api/videos/{topic.vdo_video_id}/otp",
+            headers={
+                "Authorization": f"Apisecret {settings.VDOCIPHER_API_SECRET}",
+                "Content-Type": "application/json",
+            },
+            json={"ttl": 300}
+        )
+        return Response(resp.json(), status=resp.status_code)
 class SectionTopicsView(ListAPIView):
     """GET /courses/sections/<section_id>/topics/"""
     permission_classes = [permissions.AllowAny]

@@ -81,6 +81,7 @@ class Topic(BaseModel):
     title = models.CharField(max_length=255)
     about = models.TextField(blank=True)
     video_url = models.CharField(max_length=500, blank=True, null=True)
+    vdo_video_id = models.CharField(max_length=255, blank=True, null=True)
     topic_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="content")
     order = models.PositiveIntegerField(default=1)
     slug = models.CharField(max_length=255, unique=True, blank=True)

@@ -8,7 +8,8 @@ from apps.courses.views import (
     SectionTopicsView,
     TopicDetailView,
     CourseTypeListView,
-    CoursesByCourseTypeView
+    CoursesByCourseTypeView,
+    VideoOTPView
 )
 from apps.courses.views_submission import TopicSubmitView
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path("my-courses/", MyPurchasedCoursesView.as_view(), name="my-courses"),
     path('course-types/', CourseTypeListView.as_view()),
     path('course-types/<uuid:course_type_id>/courses/', CoursesByCourseTypeView.as_view()),
+    path("topics/<uuid:topic_id>/video-otp/", VideoOTPView.as_view(), name="topic-video-otp"),
 ]
