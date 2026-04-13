@@ -104,7 +104,25 @@ class CourseSectionsView(ListAPIView):
 
 import requests
 from django.conf import settings
+import json
+# class VideoOTPView(APIView):
+#     permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
 
+#     def get(self, request, topic_id):
+#         topic = get_object_or_404(Topic, id=topic_id)
+        
+#         if not topic.vdo_video_id:
+#             return Response({"detail": "Video mavjud emas"}, status=404)
+
+#         resp = requests.post(
+#             f"https://dev.vdocipher.com/api/videos/{topic.vdo_video_id}/otp",
+#             headers={
+#                 "Authorization": f"Apisecret {settings.VDOCIPHER_API_SECRET}",
+#                 "Content-Type": "application/json",
+#             },
+#             json={"ttl": 300}
+#         )
+#         return Response(resp.json(), status=resp.status_code)
 class VideoOTPView(APIView):
     permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
 
@@ -114,13 +132,25 @@ class VideoOTPView(APIView):
         if not topic.vdo_video_id:
             return Response({"detail": "Video mavjud emas"}, status=404)
 
+        annotate_list = [
+            {
+                "type": "rtext",
+                "text": "adxamovdev@gmail.com",  # ← foydalanuvchi emaili
+                "alpha": 0.4,
+                "color": "0xFFFFFF",
+                "size": 12,
+                "interval": 5000,
+                "position": "bottom-right"
+            }
+        ]
+
         resp = requests.post(
             f"https://dev.vdocipher.com/api/videos/{topic.vdo_video_id}/otp",
             headers={
                 "Authorization": f"Apisecret {settings.VDOCIPHER_API_SECRET}",
                 "Content-Type": "application/json",
             },
-            json={"ttl": 300}
+            json={"ttl": 300, "annotate": json.dumps(annotate_list)}
         )
         return Response(resp.json(), status=resp.status_code)
 class SectionTopicsView(ListAPIView):
