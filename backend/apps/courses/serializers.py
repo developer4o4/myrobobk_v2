@@ -36,7 +36,7 @@ class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
-        fields = ("id", "title", "about", "video_url", "topic_type", "is_code", "order", "problems")
+        fields = ("id", "title", "about", "video_url", "vdo_video_id", "topic_type", "is_code", "order", "problems")
 
     def get_problems(self, obj):
         if obj.topic_type == "code":
