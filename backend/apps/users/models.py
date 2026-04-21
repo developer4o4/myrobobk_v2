@@ -30,6 +30,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # ✅ TUZATILDI: default=0 (avval 5_000_000 edi — xavfli!)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    # Single session uchun
+    active_session_key = models.CharField(max_length=64, blank=True, null=True)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)

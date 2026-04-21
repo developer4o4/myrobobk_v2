@@ -137,7 +137,13 @@ class LoginByCodeView(APIView):
             user.username = username
             user.save(update_fields=["username"])
 
+        # Single session: yangi session key generatsiya
+        session_key = secrets.token_hex(32)
+        user.active_session_key = session_key
+        user.save(update_fields=["active_session_key"])
+
         refresh = RefreshToken.for_user(user)
+        refresh['session_key'] = session_key  # Custom claim qo'shamiz
         logger.info("Login: user=%s created=%s", user.pk, created)
 
         return Response({
@@ -165,3 +171,14 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(UserMeSerializer(request.user).data)
+
+
+class LogoutView(APIView):
+    """POST /user/auth/logout/"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        # Sessiyani bekor qilish
+        request.user.active_session_key = None
+        request.user.save(update_fields=["active_session_key"])
+        return Response({"detail": "Logout muvaffaqiyatli."})
