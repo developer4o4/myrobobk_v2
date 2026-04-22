@@ -112,8 +112,8 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "60/minute",
-        "user": "300/minute",
+        "anon": "500/minute",
+        "user": "1000/minute",
     },
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     # "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
