@@ -5,7 +5,10 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.courses.models import Course, CourseSubscription, Section, Topic, CourseType
+from apps.courses.models import (
+    Course, CourseSubscription, Section, Topic, CourseType,
+    TopicView, SectionCompletion
+)
 from apps.courses.permissions import HasActiveCourseSubscription
 from apps.courses.serializers import (
     BuyCourseSerializer,
@@ -168,6 +171,48 @@ class TopicDetailView(RetrieveAPIView):
     queryset = Topic.objects.select_related("section__course")
     serializer_class = TopicSerializer
     permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
+
+
+class MarkTopicViewedView(APIView):
+    """POST /courses/topics/<topic_id>/mark-viewed/
+    
+    Video darsni ko'rilgan deb belgilash va avtomatik tarzda bo'limni tugatish.
+    """
+    permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
+
+    def post(self, request, topic_id):
+        topic = get_object_or_404(Topic, id=topic_id)
+        user = request.user
+        
+        # Darsni ko'rilgan deb belgilash
+        topic_view, created = TopicView.objects.get_or_create(
+            user=user,
+            topic=topic,
+        )
+        
+        # Bu sectionning barcha topiclar ko'rilganmi tekshirish
+        section = topic.section
+        total_topics = Topic.objects.filter(section=section).count()
+        viewed_topics = TopicView.objects.filter(
+            user=user,
+            topic__section=section
+        ).count()
+        
+        # Agar barcha topiclar ko'rilsa, sectionni tugatish
+        section_completed = False
+        if viewed_topics == total_topics:
+            section_completion, completion_created = SectionCompletion.objects.get_or_create(
+                user=user,
+                section=section,
+            )
+            section_completed = completion_created
+        
+        return Response({
+            "ok": True,
+            "topic_id": str(topic.id),
+            "topic_viewed": created,
+            "section_completed": section_completed,
+        }, status=status.HTTP_200_OK)
 
 
 class MyPurchasedCoursesView(ListAPIView):

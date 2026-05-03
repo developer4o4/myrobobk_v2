@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from apps.courses.models import Course, Problem, Section, Topic, CourseType
+from apps.courses.models import (
+    Course, Problem, Section, Topic, CourseType,
+    TopicView, SectionCompletion
+)
 
 
 class ProblemSerializer(serializers.ModelSerializer):
@@ -71,3 +74,18 @@ class MyCourseSerializer(serializers.ModelSerializer):
 class SubmitCodeSerializer(serializers.Serializer):
     language = serializers.ChoiceField(choices=["py", "c", "cpp"])
     source_code = serializers.CharField(max_length=65536)  # 64KB limit
+
+
+class TopicViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TopicView
+        fields = ("id", "topic", "viewed_at")
+        read_only_fields = ("id", "viewed_at")
+
+
+class SectionCompletionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SectionCompletion
+        fields = ("id", "section", "completed_at")
+        read_only_fields = ("id", "completed_at")
+

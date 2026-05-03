@@ -218,3 +218,37 @@ class CourseSubscription(BaseModel):
                 u.pk, course.pk, created, sub.expires_at,
             )
             return sub
+
+
+class TopicView(BaseModel):
+    """Foydalanuvchi video darsni ko'rish haqida ma'lumot."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="topic_views")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="views")
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "topic")
+        indexes = [
+            models.Index(fields=["user", "topic"]),
+            models.Index(fields=["viewed_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} -> {self.topic_id}"
+
+
+class SectionCompletion(BaseModel):
+    """Foydalanuvchi bo'lim (section/chapter) ni tugatish haqida ma'lumot."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="section_completions")
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="completions")
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "section")
+        indexes = [
+            models.Index(fields=["user", "section"]),
+            models.Index(fields=["completed_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} -> {self.section_id}"
