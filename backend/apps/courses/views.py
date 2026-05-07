@@ -104,10 +104,65 @@ class CourseSectionsView(ListAPIView):
             .prefetch_related("topics")
             .order_by("order", "id")
         )
-
+import jwt
+import time
 import requests
 from django.conf import settings
 import json
+class VideoOTPView(APIView):
+    """
+    VdoCipher OTP o'rniga Kinescope uchun
+    signed embed URL va watermark ma'lumotlarini qaytaradi.
+    """
+    permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
+
+    def get(self, request, topic_id):
+        topic = get_object_or_404(Topic, id=topic_id)
+
+        if not topic.kinescope_video_id:
+            return Response({"detail": "Video mavjud emas"}, status=404)
+
+        video_id = topic.kinescope_video_id
+
+        # --- Signed Token (JWT) generatsiya ---
+        # Kinescope signed token uchun settings.py da:
+        # KINESCOPE_SECRET_KEY = "your_secret_key_from_dashboard"
+        now = int(time.time())
+        payload = {
+            "sub": str(request.user.id),   # foydalanuvchi identifikatori
+            "video_id": video_id,
+            "iat": now,
+            "exp": now + 300,              # 5 daqiqa (VdoCipher TTL=300 bilan bir xil)
+        }
+
+        try:
+            signed_token = jwt.encode(
+                payload,
+                settings.KINESCOPE_SECRET_KEY,
+                algorithm="HS256"
+            )
+        except Exception as e:
+            return Response({"detail": f"Token generatsiya xatosi: {str(e)}"}, status=500)
+
+        # --- Kinescope embed URL ---
+        # Token signed bo'lsa: ?token=... parametri qo'shiladi
+        embed_url = f"https://kinescope.io/embed/{video_id}?token={signed_token}"
+
+        # --- Watermark (player-level, frontend uchun ma'lumot) ---
+        # Kinescope watermark-ni iframe src parametri orqali emas,
+        # balki player API (JS) orqali yoki dashboard'da sozlanadi.
+        # Backend sifatida foydalanuvchi ma'lumotini frontendga yuboramiz:
+        watermark = {
+            "text": request.user.email or "Myrobo",  # dinamik watermark matni
+            "mode": "random",                          # "random" | "stripes"
+        }
+
+        return Response({
+            "embed_url": embed_url,
+            "video_id": video_id,
+            "watermark": watermark,
+            "token": signed_token,
+        })
 # class VideoOTPView(APIView):
 #     permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
 
@@ -117,45 +172,28 @@ import json
 #         if not topic.vdo_video_id:
 #             return Response({"detail": "Video mavjud emas"}, status=404)
 
+#         annotate_list = [
+#             {
+#                 "type": "rtext",
+#                 "text": "Myrobo",  # ← foydalanuvchi emaili
+#                 "alpha": 0.4,
+#                 "color": "0xFFFFFF",
+#                 "size": 12,
+#                 "interval": 5000,
+#                 "position": "bottom-right"
+#             }
+#         ]
+
 #         resp = requests.post(
 #             f"https://dev.vdocipher.com/api/videos/{topic.vdo_video_id}/otp",
 #             headers={
 #                 "Authorization": f"Apisecret {settings.VDOCIPHER_API_SECRET}",
 #                 "Content-Type": "application/json",
 #             },
-#             json={"ttl": 300}
+#             json={"ttl": 300, "annotate": json.dumps(annotate_list)}
 #         )
 #         return Response(resp.json(), status=resp.status_code)
-class VideoOTPView(APIView):
-    permission_classes = [permissions.IsAuthenticated, HasActiveCourseSubscription]
-
-    def get(self, request, topic_id):
-        topic = get_object_or_404(Topic, id=topic_id)
-        
-        if not topic.vdo_video_id:
-            return Response({"detail": "Video mavjud emas"}, status=404)
-
-        annotate_list = [
-            {
-                "type": "rtext",
-                "text": "adxamovdev@gmail.com",  # ← foydalanuvchi emaili
-                "alpha": 0.4,
-                "color": "0xFFFFFF",
-                "size": 12,
-                "interval": 5000,
-                "position": "bottom-right"
-            }
-        ]
-
-        resp = requests.post(
-            f"https://dev.vdocipher.com/api/videos/{topic.vdo_video_id}/otp",
-            headers={
-                "Authorization": f"Apisecret {settings.VDOCIPHER_API_SECRET}",
-                "Content-Type": "application/json",
-            },
-            json={"ttl": 300, "annotate": json.dumps(annotate_list)}
-        )
-        return Response(resp.json(), status=resp.status_code)
+    
 class SectionTopicsView(ListAPIView):
     """GET /courses/sections/<section_id>/topics/"""
     permission_classes = [permissions.AllowAny]
