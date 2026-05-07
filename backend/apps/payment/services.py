@@ -26,7 +26,7 @@ def payme_checkout_link(order_id, amount_tiyin: int, lang: str = "uz", callback_
     # Add callback URL if provided
     if callback_url:
         params += f";c={callback_url}"
-    
+    print(params)
     # Encode to base64
     encoded = base64.b64encode(params.encode()).decode()
     
