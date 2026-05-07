@@ -12,7 +12,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-VDOCIPHER_API_SECRET = os.getenv('VDOCIPHER_API_SECRET')
+KINESCOPE_SECRET_KEY = os.getenv('KINESCOPE_SECRET_KEY')
 # ──────────────────────────── APPS ────────────────────────────
 INSTALLED_APPS = [
     "django.contrib.admin",
