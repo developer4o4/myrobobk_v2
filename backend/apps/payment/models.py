@@ -23,12 +23,6 @@ class PaymeTransaction(models.Model):
         (STATE_CANCELED, "Canceled"),
     )
 
-    id = models.CharField(
-        primary_key=True,
-        max_length=36,
-        editable=False,
-        unique=True
-    )
 
     provider = models.CharField(
         max_length=20,
