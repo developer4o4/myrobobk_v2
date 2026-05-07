@@ -21,7 +21,7 @@ def payme_checkout_link(order_id: str, amount_tiyin: int, lang: str = "uz") -> s
     # Rasmiy Payme checkout URL
     checkout_url = f"https://checkout.payme.uz"
     
-    params = f"m={merchant_id};a={amount_tiyin};ac.user_id={order_id};l={lang}"
+    params = f"m={merchant_id};a={amount_tiyin};ac.order_id={order_id};l={lang}"
     
     return f"{checkout_url}/{params}"
 
