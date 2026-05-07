@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.blog",
     "apps.teachers",
     "apps.common",
+    "apps.payment",
 ]
 
 # ──────────────────────────── MIDDLEWARE ────────────────────────────
@@ -147,6 +148,11 @@ CKEDITOR_CONFIGS = {
         ],
     }
 }
+
+# ──────────────────────────── PAYME PAYMENT ────────────────────────────
+PAYME_MERCHANT_ID = os.getenv("PAYME_MERCHANT_ID", "67c19bd7e4b4003392f291ef")
+PAYME_LOGIN = os.getenv("PAYME_LOGIN", "Paycom")
+PAYME_SECRET_KEY = os.getenv("PAYME_SECRET_KEY", "mCQhHt0kiRkMM#ccT2eOieiZkp84dC5MSUgO")
 
 # ──────────────────────────── JUDGE SETTINGS ────────────────────────────
 JUDGE_IMAGE = os.getenv("JUDGE_IMAGE", "judge-sandbox:latest")

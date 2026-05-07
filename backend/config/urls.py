@@ -10,6 +10,7 @@ urlpatterns = [
     path("courses/", include("apps.courses.urls")),
     path("blog/", include("apps.blog.urls")),
     path("teacher/", include("apps.teachers.urls")),
+    path("payment/", include("apps.payment.urls")),
 ]
 
 if settings.DEBUG:
