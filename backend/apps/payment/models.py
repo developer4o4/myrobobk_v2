@@ -22,6 +22,9 @@ class PaymeTransaction(models.Model):
         (STATE_DONE, "Done"),
         (STATE_CANCELED, "Canceled"),
     )
+    id = models.BigAutoField(
+        primary_key=True
+    )
 
 
     provider = models.CharField(
