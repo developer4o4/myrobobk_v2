@@ -119,10 +119,10 @@ class VideoOTPView(APIView):
     def get(self, request, topic_id):
         topic = get_object_or_404(Topic, id=topic_id)
 
-        if not topic.kinescope_video_id:
+        if not topic.video_url:
             return Response({"detail": "Video mavjud emas"}, status=404)
 
-        video_id = topic.kinescope_video_id
+        video_id = topic.video_url
 
         # --- Signed Token (JWT) generatsiya ---
         # Kinescope signed token uchun settings.py da:
@@ -153,7 +153,7 @@ class VideoOTPView(APIView):
         # balki player API (JS) orqali yoki dashboard'da sozlanadi.
         # Backend sifatida foydalanuvchi ma'lumotini frontendga yuboramiz:
         watermark = {
-            "text": request.user.email or "Myrobo",  # dinamik watermark matni
+            "text": "Myrobo",  # dinamik watermark matni
             "mode": "random",                          # "random" | "stripes"
         }
 
