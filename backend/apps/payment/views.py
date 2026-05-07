@@ -336,7 +336,8 @@ class PaymeCheckoutLinkAPIView(APIView):
         )
 
         print(f"✅ Link yaratildi: {checkout_url}")
-
+        print("CHECKOUT URL TYPE:", type(checkout_url))
+        print("CHECKOUT URL:", checkout_url)
         return Response({
             "order_id": tx.id,
             "payment_url": checkout_url,
