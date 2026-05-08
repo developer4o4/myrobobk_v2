@@ -12,7 +12,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-KINESCOPE_SECRET_KEY = "3cbc9fde-148c-47d9-85b1-24b306fe2f82"
+KINESCOPE_SECRET_KEY = ""
 # ──────────────────────────── APPS ────────────────────────────
 INSTALLED_APPS = [
     "django.contrib.admin",
