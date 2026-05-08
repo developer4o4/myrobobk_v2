@@ -104,15 +104,11 @@ class PaymeWebhookAPIView(APIView):
         return _payme_error(_id, -32601, "Method not found", "Method topilmadi")
 
     def _get_tx(self, params):
-        """
-        PaymeTransaction topish
-        - account.user_id orqali (CheckPerform/Create)
-        - payme_transaction_id orqali (Perform/Cancel)
-        """
         account = params.get("account") or {}
-        account_id = str(account.get("user_id") or "").strip()
+        
+        # ✅ order_id qidiriladi (checkout linkda ac.order_id ishlatilgan)
+        account_id = str(account.get("order_id") or "").strip()
 
-        # Account ID bo'yicha qidiramiz (Create va Check uchun)
         if account_id:
             return (
                 PaymeTransaction.objects
@@ -121,7 +117,6 @@ class PaymeWebhookAPIView(APIView):
                 .first()
             )
 
-        # Payme transaction ID bo'yicha qidiramiz (Perform va Cancel uchun)
         payme_tx_id = str(params.get("id") or "").strip()
         if payme_tx_id:
             return (
