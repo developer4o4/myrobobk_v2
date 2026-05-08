@@ -30,7 +30,7 @@ def payme_checkout_link(order_id, amount_tiyin: int, lang: str = "uz", callback_
     # Encode to base64
     encoded = base64.b64encode(params.encode()).decode()
     
-    return f"https://checkout.paycom.uz/{params}"
+    return f"https://checkout.paycom.uz/{encoded}"
 
 
 def payme_checkout_link_simple(order_id, amount_tiyin: int, lang: str = "uz") -> str:
