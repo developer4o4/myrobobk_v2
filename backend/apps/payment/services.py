@@ -21,7 +21,7 @@ def payme_checkout_link(order_id, amount_tiyin: int, lang: str = "uz", callback_
     merchant_id = settings.PAYME_MERCHANT_ID
     
     # Build parameters string
-    params = f"m={merchant_id};ac.user_id={order_id};a={amount_tiyin};l={lang}"
+    params = f"m={merchant_id};ac.order_id={order_id};a={amount_tiyin};l={lang}"
     
     # Add callback URL if provided
     if callback_url:
